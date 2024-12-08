@@ -29,4 +29,4 @@
 
     - name: Obtain TLS Certificate
       command: >
-        sudo certbot --nginx -d www.herkuskrisciunas.me -d herkuskrisciunas.me --non-interactive --agree-tos --email herkuskrisciunas@gmail.com
+        sudo certbot --nginx -d www.herkuskrisciunas.me -d herkuskrisciunas.me --non-interactive --agree-tos
