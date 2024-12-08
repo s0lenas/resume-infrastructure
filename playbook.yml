@@ -2,19 +2,31 @@
   hosts: all
   become: yes
   tasks:
+    - name: Update and upgrade apt packages
+      become: true
+      apt:
+        upgrade: yes
+        update_cache: yes
+        cache_valid_time: 86400
+
     - name: Install Nginx
       apt:
         name: nginx
         state: present
+
     - name: Start Nginx
       service:
         name: nginx
         state: started
         enabled: yes
-    - name: Install Certbot
+
+    - name: Install Certbot and Nginx plugin
       apt:
-        name: certbot
+        name: 
+          - certbot
+          - python3-certbot-nginx
         state: present
+
     - name: Obtain TLS Certificate
       command: >
-        certbot --nginx -d www.herkuskrisciunas.me -d herkuskrisciunas.com
+        sudo certbot --nginx -d www.herkuskrisciunas.me -d herkuskrisciunas.me --non-interactive --agree-tos --email herkuskrisciunas@gmail.com

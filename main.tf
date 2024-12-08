@@ -59,10 +59,18 @@ resource "aws_route53_zone" "dns-records" {
     name = "herkuskrisciunas.me"
 }
 
-resource "aws_route53_record" "www" {
+resource "aws_route53_record" "herkuskrisciunas" {
     zone_id = aws_route53_zone.dns-records.zone_id
     name = "herkuskrisciunas.me"
     type = "A"
     ttl = 300
     records = [aws_instance.resume-server.public_ip]
+}
+
+resource "aws_route53_record" "www" {
+    zone_id = aws_route53_zone.dns-records.zone_id
+    name = "www.herkuskrisciunas.me"
+    type = "CNAME"
+    ttl = 300
+    records = ["herkuskrisciunas.me"]
 }
