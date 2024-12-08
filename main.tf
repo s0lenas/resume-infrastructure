@@ -2,18 +2,57 @@ provider "aws" {
     region = "eu-north-1"
 }
 
+resource "aws_key_pair" "default" {
+    key_name = "my-key"
+    public_key = file("~/.ssh/id_rsa.pub")
+}
+
+resource "aws_security_group" "resume-server" {
+  name        = "web-sg"
+  description = "Allow HTTP and SSH"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_instance" "resume-server" {
     ami = "ami-075449515af5df0d1"
     instance_type = "t3.micro"
-    user_data = <<EOF
-#!/bin/bash
-echo "Copying the SSH Key to the server"
-echo -e "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDY3Sb7faJaWIbThlXI5l7vMtjEz/hvgTJRBXp7YB7fl4EOfANDyxbfgf9FNbPI3kRWqLAjfNhIqtytuhoDQsEeacUNU6sMVqUupYUACuTOcYh/8ALb8WSiwKy2YEDzjnMoaFdIqI+k0Vw9ObR4Ow3RILUX2gm5y3Ll0XVVpbi1Xb6nNZOTANDTH+mQL7SvtmVuysTO+Zahv2ZzDhfvzx8p+cWXShhwbvgIWNg4aRZ9uq54zcwOKDvHiuqS9aZZmeYp5RgMlGrc6Zp4jSvSkKQiITeN92dtBeGY67D68wb2EQqjCQxB7zPgdqFNIEcIBnwbMY+thVhS0qYhlx7rInIQWw6F6iALlc1A9fuIhk7oFHDDozjoGQM8mej5ET3nkhKA7zoed3khVsskXCiRWUtg8Ijj/G+LFKF5EL1qRIDF4xiEVu9k9InfIP72gxNCjjilB6AbOL7Yo9kK6/cMRecqqclNXnF1DY6Tn+EP8DsXFuf4/occGTccF/H5UBAeHU57ec22Ko6/SZfs/8HKfH4m3z9qQ8tpmdH3Gx6K8n7MgfaPlzAW0hmGA5Bkh5AaLCDb9Z+o2yPn3MsIIH9/gBBHORiQyAVuuT69eMrtnToEpuqV2iS4UTaPnyvMm3W9MmFyi3hZpV/FbPke8Qq4Wz+hPjpnTIiMc2VwAJN1XOrF3w== s0len@DESKTOP-IGSIS6N"
-    EOF
+    key_name = aws_key_pair.default.key_name
+    security_groups = [aws_security_group.resume-server.name]
 
     tags = {
         Name = "ResumeServer"
     }
+}
+
+output "vps_ip" {
+    value = aws_instance.resume-server.public_ip
 }
 
 resource "aws_route53_zone" "dns-records" {
